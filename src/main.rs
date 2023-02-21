@@ -1,4 +1,5 @@
 mod activity_pub;
+mod args;
 mod sky_jpeg;
 mod tracing;
 mod webfinger;
@@ -7,6 +8,7 @@ use actix_web::{
     web::{scope, Data},
     App, HttpServer,
 };
+use clap::Parser;
 use tracing_actix_web::TracingLogger;
 use webfinger::Resolver;
 
@@ -31,6 +33,9 @@ impl HourlyWeather {
 async fn main() -> std::io::Result<()> {
     tracing::init("hourly-weather");
 
+    let args = args::Args::parse();
+    let tls_config = args.tls_config();
+
     HttpServer::new(|| {
         App::new()
             .wrap(TracingLogger::default())
@@ -41,6 +46,7 @@ async fn main() -> std::io::Result<()> {
             .configure(sky_jpeg::service)
     })
     .bind(("127.0.0.1", 8080))?
+    .bind_rustls(("0.0.0.0", 8443), tls_config)?
     .run()
     .await?;
 
