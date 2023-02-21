@@ -1,6 +1,8 @@
+mod tracing;
 mod webfinger;
 
 use actix_web::{get, web::Data, App, HttpResponse, HttpServer, Responder};
+use tracing_actix_web::TracingLogger;
 use webfinger::Resolver;
 
 #[derive(Debug)]
@@ -33,13 +35,20 @@ async fn profile() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    tracing::init("hourly-weather");
+
     HttpServer::new(|| {
         App::new()
+            .wrap(TracingLogger::default())
             .app_data(HourlyWeather::new("weather.segment7.net").to_app_data())
             .service(actix_webfinger::resource::<Resolver>())
             .service(profile)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
-    .await
+    .await?;
+
+    opentelemetry::global::shutdown_tracer_provider();
+
+    Ok(())
 }
