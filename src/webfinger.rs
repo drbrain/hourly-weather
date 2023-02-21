@@ -24,7 +24,8 @@ impl actix_webfinger::Resolver for Resolver {
 
         let w = if scheme == Some("acct:") && domain == state.domain && account == "hourly" {
             let webfinger = Webfinger::new(&subject)
-                .add_profile("http://weather.segment7.net/hourly")
+                .add_activitypub(&format!("https://{}/hourly", state.domain))
+                .add_profile(&format!("https://{}/hourly/about", state.domain))
                 .clone();
 
             Some(webfinger)
