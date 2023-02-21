@@ -41,9 +41,9 @@ async fn history() -> impl Responder {
 <title>Hourly weather history</title>
 
 <ol>
-<ul><img src="/images/weather/20230218/20230218-00:00:00.jpeg">
-<ul><img src="/images/weather/20230218/20230218-01:00:00.jpeg">
-<ul><img src="/images/weather/20230218/20230218-02:00:00.jpeg">
+<ul><img src="/images/20230218/20230218-00:00:00.jpeg">
+<ul><img src="/images/20230218/20230218-01:00:00.jpeg">
+<ul><img src="/images/20230218/20230218-02:00:00.jpeg">
 </ul>
 "#,
         )
@@ -51,7 +51,7 @@ async fn history() -> impl Responder {
 
 async fn outbox() -> impl Responder {
     let mut outbox = Outbox::empty("https://weather.segment7.net/hourly/outbox".into());
-    let link = Link::jpeg("https://weather.segment7.net/images/20230218/20230218:00:00:00.jpeg");
+    let link = Link::jpeg("https://weather.segment7.net/images/20230218/20230218-00:00:00.jpeg");
     let image = Image::new("20230218-00:00", vec![link]);
     let create = Create::new("https://weather.segment7.net/hourly", image);
     outbox.push(create);
@@ -83,6 +83,7 @@ async fn main() -> std::io::Result<()> {
                     .route("/about", get().to(profile))
                     .route("/outbox", get().to(outbox)),
             )
+            .service(actix_files::Files::new("/images", "images"))
     })
     .bind(("127.0.0.1", 8080))?
     .run()
