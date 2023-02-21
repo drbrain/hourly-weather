@@ -1,4 +1,4 @@
-use crate::image::Image;
+use crate::activity_pub::image::Image;
 use activitystreams_kinds::activity::CreateType;
 use actix_web::{body::BoxBody, HttpResponse};
 use serde::Serialize;

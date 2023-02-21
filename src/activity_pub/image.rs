@@ -1,8 +1,7 @@
+use crate::activity_pub::link::Link;
 use activitystreams_kinds::object::ImageType;
 use actix_web::{body::BoxBody, HttpResponse};
 use serde::Serialize;
-
-use crate::link::Link;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]

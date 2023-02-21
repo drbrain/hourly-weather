@@ -1,4 +1,4 @@
-use crate::create::Create;
+use crate::activity_pub::create::Create;
 use activitystreams_kinds::collection::OrderedCollectionType;
 use actix_web::{body::BoxBody, HttpResponse};
 use serde::Serialize;
