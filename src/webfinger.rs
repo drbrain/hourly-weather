@@ -18,7 +18,11 @@ impl actix_webfinger::Resolver for Resolver {
         state: Data<HourlyWeather>,
     ) -> LocalBoxFuture<'static, Result<Option<Webfinger>, Self::Error>> {
         let w = if scheme == Some("acct:") && domain == state.domain && account == "hourly" {
-            Some(Webfinger::new(&format!("{}@{}", account, domain)))
+            let webfinger = Webfinger::new(&format!("{}@{}", account, domain))
+                .add_profile("http://weather.segment7.net/hourly")
+                .clone();
+
+            Some(webfinger)
         } else {
             None
         };

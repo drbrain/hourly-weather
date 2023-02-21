@@ -20,9 +20,15 @@ impl HourlyWeather {
     }
 }
 
-#[get("/")]
-async fn root() -> impl Responder {
-    HttpResponse::Ok().body("It works!")
+#[get("/hourly")]
+async fn profile() -> impl Responder {
+    HttpResponse::Ok().content_type("text/html").body(
+        r#"<!DOCTYPE html>
+<title>Hourly weather</title>
+
+<p>Hourly weather photos from Seattle
+"#,
+    )
 }
 
 #[actix_web::main]
@@ -31,7 +37,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(HourlyWeather::new("weather.segment7.net").to_app_data())
             .service(actix_webfinger::resource::<Resolver>())
-            .service(root)
+            .service(profile)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
