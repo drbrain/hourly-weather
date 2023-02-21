@@ -1,13 +1,12 @@
+mod outbox;
 mod tracing;
 mod webfinger;
 
-use activitystreams_kinds::collection::OrderedCollectionType;
 use actix_web::{
-    body::BoxBody,
     web::{get, scope, Data},
     App, HttpResponse, HttpServer, Responder,
 };
-use serde::Serialize;
+use outbox::Outbox;
 use tracing_actix_web::TracingLogger;
 use webfinger::Resolver;
 
@@ -42,38 +41,6 @@ async fn history() -> impl Responder {
 </ul>
 "#,
         )
-}
-
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-struct Outbox {
-    r#type: OrderedCollectionType,
-    id: String,
-    items: Vec<()>,
-    total_items: usize,
-}
-
-impl Outbox {
-    fn empty(id: String) -> Self {
-        Self {
-            r#type: OrderedCollectionType::OrderedCollection,
-            id,
-            items: vec![],
-            total_items: 0,
-        }
-    }
-}
-
-impl actix_web::Responder for Outbox {
-    type Body = BoxBody;
-
-    fn respond_to(self, _req: &actix_web::HttpRequest) -> HttpResponse<Self::Body> {
-        let body = serde_json::to_string(&self).unwrap();
-
-        HttpResponse::Ok()
-            .content_type("application/activity+json; charset=utf-8")
-            .body(body)
-    }
 }
 
 async fn outbox() -> impl Responder {
