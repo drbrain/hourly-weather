@@ -13,10 +13,10 @@ pub struct Outbox {
 }
 
 impl Outbox {
-    pub fn empty(id: String) -> Self {
+    pub fn empty(id: impl Into<String>) -> Self {
         Self {
             r#type: OrderedCollectionType::OrderedCollection,
-            id,
+            id: id.into(),
             items: vec![],
             total_items: 0,
         }
