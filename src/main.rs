@@ -1,4 +1,5 @@
 mod activity_pub;
+mod sky_jpeg;
 mod tracing;
 mod webfinger;
 
@@ -37,6 +38,7 @@ async fn main() -> std::io::Result<()> {
             .service(actix_webfinger::resource::<Resolver>())
             .service(scope("/hourly").configure(activity_pub::app))
             .service(actix_files::Files::new("/images", "images"))
+            .configure(sky_jpeg::service)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
