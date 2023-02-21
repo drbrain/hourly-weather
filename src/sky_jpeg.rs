@@ -1,6 +1,5 @@
 use actix_files::NamedFile;
 use actix_web::{
-    guard,
     web::{self, get},
     Result,
 };
@@ -13,14 +12,6 @@ async fn sky_jpeg() -> Result<NamedFile> {
 }
 
 pub fn service(cfg: &mut web::ServiceConfig) {
-    cfg.service(
-        web::resource("/")
-            .guard(guard::Header("Host", "weather.segment7.net"))
-            .route(get().to(empty)),
-    );
-    cfg.service(
-        web::resource("/sky.jpeg")
-            .guard(guard::Header("Host", "weather.segment7.net"))
-            .route(get().to(sky_jpeg)),
-    );
+    cfg.service(web::resource("/").route(get().to(empty)));
+    cfg.service(web::resource("/sky.jpeg").route(get().to(sky_jpeg)));
 }
