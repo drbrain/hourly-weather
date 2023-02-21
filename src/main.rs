@@ -1,3 +1,6 @@
+mod create;
+mod image;
+mod link;
 mod outbox;
 mod tracing;
 mod webfinger;
@@ -6,6 +9,9 @@ use actix_web::{
     web::{get, scope, Data},
     App, HttpResponse, HttpServer, Responder,
 };
+use create::Create;
+use image::Image;
+use link::Link;
 use outbox::Outbox;
 use tracing_actix_web::TracingLogger;
 use webfinger::Resolver;
@@ -44,7 +50,12 @@ async fn history() -> impl Responder {
 }
 
 async fn outbox() -> impl Responder {
-    Outbox::empty("https://weather.segment7.net/hourly/outbox".into())
+    let mut outbox = Outbox::empty("https://weather.segment7.net/hourly/outbox".into());
+    let link = Link::jpeg("https://weather.segment7.net/images/20230218/20230218:00:00:00.jpeg");
+    let image = Image::new("20230218-00:00", vec![link]);
+    let create = Create::new("https://weather.segment7.net/hourly", image);
+    outbox.push(create);
+    outbox
 }
 
 async fn profile() -> impl Responder {

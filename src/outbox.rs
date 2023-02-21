@@ -1,3 +1,4 @@
+use crate::create::Create;
 use activitystreams_kinds::collection::OrderedCollectionType;
 use actix_web::{body::BoxBody, HttpResponse};
 use serde::Serialize;
@@ -7,7 +8,7 @@ use serde::Serialize;
 pub struct Outbox {
     r#type: OrderedCollectionType,
     id: String,
-    items: Vec<()>,
+    items: Vec<Create>,
     total_items: usize,
 }
 
@@ -19,6 +20,11 @@ impl Outbox {
             items: vec![],
             total_items: 0,
         }
+    }
+
+    pub fn push(&mut self, activity: Create) {
+        self.items.push(activity);
+        self.total_items = self.items.len();
     }
 }
 
