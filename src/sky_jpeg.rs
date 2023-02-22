@@ -8,7 +8,7 @@ async fn empty() -> impl actix_web::Responder {
     actix_web::HttpResponse::Ok().finish()
 }
 async fn sky_jpeg() -> Result<NamedFile> {
-    Ok(NamedFile::open("/data/www/weather/sky.jpeg")?)
+    Ok(NamedFile::open("/data/www/default/sky.jpeg")?)
 }
 
 pub fn service(cfg: &mut web::ServiceConfig) {
