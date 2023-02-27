@@ -1,6 +1,5 @@
 use crate::activity_pub::create::Create;
 use activitystreams_kinds::collection::OrderedCollectionType;
-use actix_web::{body::BoxBody, HttpResponse};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -25,17 +24,5 @@ impl Outbox {
     pub fn push(&mut self, activity: Create) {
         self.items.push(activity);
         self.total_items = self.items.len();
-    }
-}
-
-impl actix_web::Responder for Outbox {
-    type Body = BoxBody;
-
-    fn respond_to(self, _req: &actix_web::HttpRequest) -> HttpResponse<Self::Body> {
-        let body = serde_json::to_string(&self).unwrap();
-
-        HttpResponse::Ok()
-            .content_type("application/activity+json; charset=utf-8")
-            .body(body)
     }
 }

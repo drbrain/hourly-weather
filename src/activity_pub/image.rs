@@ -1,6 +1,5 @@
 use crate::activity_pub::link::Link;
 use activitystreams_kinds::object::ImageType;
-use actix_web::{body::BoxBody, HttpResponse};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -18,17 +17,5 @@ impl Image {
             name: name.into(),
             url,
         }
-    }
-}
-
-impl actix_web::Responder for Image {
-    type Body = BoxBody;
-
-    fn respond_to(self, _req: &actix_web::HttpRequest) -> HttpResponse<Self::Body> {
-        let body = serde_json::to_string(&self).unwrap();
-
-        HttpResponse::Ok()
-            .content_type("application/activity+json; charset=utf-8")
-            .body(body)
     }
 }

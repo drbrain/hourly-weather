@@ -1,16 +1,14 @@
 mod activity_pub;
 mod args;
-mod sky_jpeg;
+mod hourly;
 mod tracing;
 mod webfinger;
 
-use actix_web::{
-    web::{scope, Data},
-    App, HttpServer,
-};
+use crate::{hourly::app, webfinger::webfinger};
+use axum::{routing::get, Router};
 use clap::Parser;
-use tracing_actix_web::TracingLogger;
-use webfinger::Resolver;
+use std::{net::SocketAddr, sync::Arc};
+use tower_http::services::{ServeDir, ServeFile};
 
 #[derive(Debug)]
 pub struct HourlyWeather {
@@ -18,37 +16,52 @@ pub struct HourlyWeather {
 }
 
 impl HourlyWeather {
-    fn new(domain: impl Into<String>) -> Self {
-        Self {
+    fn new(domain: impl Into<String>) -> Arc<Self> {
+        Arc::new(Self {
             domain: domain.into(),
-        }
+        })
     }
 
-    fn to_app_data(self) -> Data<HourlyWeather> {
-        Data::new(self)
+    pub fn actor(&self) -> String {
+        format!("https://{}/hourly", self.domain)
+    }
+
+    pub fn domain(&self) -> &str {
+        self.domain.as_ref()
+    }
+
+    pub fn image(&self, date: &str, time: &str) -> String {
+        format!("https://{}/images/{date}/{date}-{time}.jpeg", self.domain)
+    }
+
+    pub fn outbox(&self) -> String {
+        format!("https://{}/hourly/outbox", self.domain)
     }
 }
 
-#[actix_web::main]
+#[tokio::main]
 async fn main() -> std::io::Result<()> {
     tracing::init("hourly-weather");
 
     let args = args::Args::parse();
-    let tls_config = args.tls_config();
+    let tls_config = args.tls_config().await;
 
-    HttpServer::new(|| {
-        App::new()
-            .wrap(TracingLogger::default())
-            .app_data(HourlyWeather::new("weather.segment7.net").to_app_data())
-            .service(actix_webfinger::resource::<Resolver>())
-            .service(scope("/hourly").configure(activity_pub::app))
-            .service(actix_files::Files::new("/images", "images"))
-            .configure(sky_jpeg::service)
-    })
-    .bind(("127.0.0.1", 8080))?
-    .bind_rustls(("0.0.0.0", 8443), tls_config)?
-    .run()
-    .await?;
+    let state = HourlyWeather::new("weather.segment7.net");
+
+    let app = Router::new()
+        .route("/.well-known/webfinger", get(webfinger))
+        .nest("/hourly", app())
+        .nest_service("/images", ServeDir::new(args.images_dir()))
+        .route_service("/sky.jpeg", ServeFile::new(args.sky_jpeg()))
+        .with_state(state);
+
+    let port = 8443;
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
+
+    axum_server::bind_rustls(addr, tls_config)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 
     opentelemetry::global::shutdown_tracer_provider();
 
