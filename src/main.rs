@@ -1,43 +1,16 @@
 mod activity_pub;
 mod args;
 mod hourly;
+mod hourly_weather;
 mod tracing;
 mod webfinger;
 
 use crate::{hourly::app, webfinger::webfinger};
 use axum::{routing::get, Router};
 use clap::Parser;
-use std::{net::SocketAddr, sync::Arc};
+pub use hourly_weather::HourlyWeather;
+use std::net::SocketAddr;
 use tower_http::services::{ServeDir, ServeFile};
-
-#[derive(Debug)]
-pub struct HourlyWeather {
-    domain: String,
-}
-
-impl HourlyWeather {
-    fn new(domain: impl Into<String>) -> Arc<Self> {
-        Arc::new(Self {
-            domain: domain.into(),
-        })
-    }
-
-    pub fn actor(&self) -> String {
-        format!("https://{}/hourly", self.domain)
-    }
-
-    pub fn domain(&self) -> &str {
-        self.domain.as_ref()
-    }
-
-    pub fn image(&self, date: &str, time: &str) -> String {
-        format!("https://{}/images/{date}/{date}-{time}.jpeg", self.domain)
-    }
-
-    pub fn outbox(&self) -> String {
-        format!("https://{}/hourly/outbox", self.domain)
-    }
-}
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
