@@ -1,5 +1,4 @@
-use crate::hourly;
-use crate::{webfinger, Args, HourlyWeather};
+use crate::{host_meta, hourly, webfinger, Args, HourlyWeather};
 use axum::{body::HttpBody, routing::get, Router};
 use axum_tracing_opentelemetry::opentelemetry_tracing_layer;
 use std::sync::Arc;
@@ -13,6 +12,7 @@ where
 {
     Router::new()
         .layer(opentelemetry_tracing_layer())
+        .route("/.well-known/host-meta", get(host_meta).head(host_meta))
         .route("/.well-known/webfinger", get(webfinger).head(webfinger))
         .route("/healthcheck", get(healthcheck).head(healthcheck))
         .nest("/hourly", hourly::app())
