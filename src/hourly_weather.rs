@@ -24,6 +24,10 @@ impl HourlyWeather {
         format!("https://{}/images/{date}/{date}-{time}.jpeg", self.domain)
     }
 
+    pub fn inbox(&self) -> String {
+        format!("https://{}/hourly/inbox", self.domain)
+    }
+
     pub fn outbox(&self) -> String {
         format!("https://{}/hourly", self.domain)
     }

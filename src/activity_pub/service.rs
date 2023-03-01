@@ -9,9 +9,10 @@ pub struct Service {
     context: String,
     r#type: ServiceType,
     id: String,
-    outbox: String,
     name: String,
     icon: Image,
+    inbox: String,
+    outbox: String,
     preferred_username: String,
 }
 
@@ -20,6 +21,7 @@ impl Service {
         id: impl Into<String>,
         name: impl Into<String>,
         icon: Image,
+        inbox: impl Into<String>,
         outbox: impl Into<String>,
         username: impl Into<String>,
     ) -> Self {
@@ -30,6 +32,7 @@ impl Service {
             name: name.into(),
             icon,
             outbox: outbox.into(),
+            inbox: inbox.into(),
             preferred_username: username.into(),
         }
     }

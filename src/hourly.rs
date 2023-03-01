@@ -7,7 +7,7 @@ use axum::{
     extract::State,
     http::HeaderValue,
     response::{Html, IntoResponse},
-    routing::get,
+    routing::{get, post},
     Router,
 };
 use hyper::{HeaderMap, StatusCode};
@@ -22,6 +22,7 @@ where
 {
     Router::new()
         .route("/", get(root).head(root))
+        .route("/inbox", post(inbox))
         .route("/about", get(about).head(about))
 }
 
@@ -62,6 +63,8 @@ async fn history() -> Html<&'static str> {
 "#,
     )
 }
+
+async fn inbox() {}
 
 async fn outbox(State(state): State<Arc<HourlyWeather>>) -> impl IntoResponse {
     debug!("outbox");
@@ -139,6 +142,7 @@ async fn service(State(state): State<Arc<HourlyWeather>>) -> impl IntoResponse {
         state.actor(),
         "Hourly Weather",
         icon,
+        state.inbox(),
         state.outbox(),
         "hourly",
     );
