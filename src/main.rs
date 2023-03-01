@@ -14,7 +14,7 @@ pub use hourly_weather::HourlyWeather;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    tracing::init("hourly-weather");
+    tracing::init();
 
     http::start(Args::parse()).await.unwrap();
 

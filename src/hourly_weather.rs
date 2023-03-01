@@ -25,6 +25,6 @@ impl HourlyWeather {
     }
 
     pub fn outbox(&self) -> String {
-        format!("https://{}/hourly/outbox", self.domain)
+        format!("https://{}/hourly", self.domain)
     }
 }

@@ -1,27 +1,34 @@
-use std::sync::Arc;
-
+use crate::{
+    activity_pub::{Create, Image, Link, Outbox},
+    HourlyWeather,
+};
 use axum::{
     body::HttpBody,
     extract::State,
     response::{Html, IntoResponse},
     routing::get,
-    Json, Router,
+    Json, Router, http::HeaderValue,
 };
-use hyper::StatusCode;
-
-use crate::{
-    activity_pub::{Create, Image, Link, Outbox},
-    HourlyWeather,
-};
+use hyper::HeaderMap;
+use std::sync::Arc;
 
 pub fn app<B>() -> Router<Arc<HourlyWeather>, B>
 where
     B: HttpBody + Send + 'static,
 {
     Router::new()
-        .route("/", get(history).head(history))
-        .route("/outbox", get(outbox).head(outbox))
-        .route("/profile", get(profile).head(profile))
+        .route("/", get(root).head(root))
+        .route("/about", get(about).head(about))
+}
+
+async fn about() -> Html<&'static str> {
+    Html(
+        r#"<!DOCTYPE html>
+<title>About hourly weather</title>
+
+<p>Hourly weather photos from Seattle
+"#,
+    )
 }
 
 async fn history() -> Html<&'static str> {
@@ -38,7 +45,7 @@ async fn history() -> Html<&'static str> {
     )
 }
 
-async fn outbox(State(state): State<Arc<HourlyWeather>>) -> Result<impl IntoResponse, StatusCode> {
+async fn outbox(State(state): State<Arc<HourlyWeather>>) -> Json<Outbox> {
     let mut outbox = Outbox::empty(state.outbox());
 
     let date = "20230226";
@@ -62,15 +69,25 @@ async fn outbox(State(state): State<Arc<HourlyWeather>>) -> Result<impl IntoResp
     let create = Create::new(state.actor(), image);
     outbox.push(create);
 
-    Ok(Json(outbox))
+    Json(outbox)
 }
 
-async fn profile() -> Html<&'static str> {
-    Html(
-        r#"<!DOCTYPE html>
-<title>About hourly weather</title>
+async fn root(
+    State(state): State<Arc<HourlyWeather>>,
+    headers: HeaderMap,
+) -> impl IntoResponse {
+    let mut response = if let Some(accept) = headers.get("accept") {
+        if accept.to_str().unwrap_or("").contains("application/activity+json") {
+            outbox(State(state)).await.into_response()
+        } else {
+            history().await.into_response()
+        }
+    } else {
+        history().await.into_response()
+    };
 
-<p>Hourly weather photos from Seattle
-"#,
-    )
+    let headers = response.headers_mut();
+    headers.insert("vary", HeaderValue::from_static("accept"));
+
+    response
 }
