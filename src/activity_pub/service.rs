@@ -12,6 +12,7 @@ pub struct Service {
     outbox: String,
     name: String,
     icon: Image,
+    preferred_username: String,
 }
 
 impl Service {
@@ -21,13 +22,15 @@ impl Service {
         icon: Image,
         outbox: impl Into<String>,
     ) -> Self {
+        let name = name.into();
         Self {
             context: CONTEXT.into(),
             r#type: ServiceType::Service,
             id: id.into(),
-            name: name.into(),
+            name: name.clone(),
             icon,
             outbox: outbox.into(),
+            preferred_username: name,
         }
     }
 }
