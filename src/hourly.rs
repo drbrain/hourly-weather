@@ -5,12 +5,14 @@ use crate::{
 use axum::{
     body::HttpBody,
     extract::State,
+    http::HeaderValue,
     response::{Html, IntoResponse},
     routing::get,
-    Json, Router, http::HeaderValue,
+    Json, Router,
 };
 use hyper::HeaderMap;
 use std::sync::Arc;
+use tracing::debug;
 
 pub fn app<B>() -> Router<Arc<HourlyWeather>, B>
 where
@@ -22,6 +24,8 @@ where
 }
 
 async fn about() -> Html<&'static str> {
+    debug!("about");
+
     Html(
         r#"<!DOCTYPE html>
 <title>About hourly weather</title>
@@ -32,6 +36,8 @@ async fn about() -> Html<&'static str> {
 }
 
 async fn history() -> Html<&'static str> {
+    debug!("history");
+
     Html(
         r#"<!DOCTYPE html>
 <title>Hourly weather history</title>
@@ -46,6 +52,8 @@ async fn history() -> Html<&'static str> {
 }
 
 async fn outbox(State(state): State<Arc<HourlyWeather>>) -> Json<Outbox> {
+    debug!("outbox");
+
     let mut outbox = Outbox::empty(state.outbox());
 
     let date = "20230226";
@@ -72,12 +80,14 @@ async fn outbox(State(state): State<Arc<HourlyWeather>>) -> Json<Outbox> {
     Json(outbox)
 }
 
-async fn root(
-    State(state): State<Arc<HourlyWeather>>,
-    headers: HeaderMap,
-) -> impl IntoResponse {
+async fn root(State(state): State<Arc<HourlyWeather>>, headers: HeaderMap) -> impl IntoResponse {
     let mut response = if let Some(accept) = headers.get("accept") {
-        if accept.to_str().unwrap_or("").contains("application/activity+json") {
+        debug!(?accept, "root");
+        if accept
+            .to_str()
+            .unwrap_or("")
+            .contains("application/activity+json")
+        {
             outbox(State(state)).await.into_response()
         } else {
             history().await.into_response()
