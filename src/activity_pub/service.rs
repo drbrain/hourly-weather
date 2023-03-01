@@ -21,16 +21,16 @@ impl Service {
         name: impl Into<String>,
         icon: Image,
         outbox: impl Into<String>,
+        username: impl Into<String>,
     ) -> Self {
-        let name = name.into();
         Self {
             context: CONTEXT.into(),
             r#type: ServiceType::Service,
             id: id.into(),
-            name: name.clone(),
+            name: name.into(),
             icon,
             outbox: outbox.into(),
-            preferred_username: name,
+            preferred_username: username.into(),
         }
     }
 }

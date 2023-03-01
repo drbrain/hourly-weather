@@ -129,7 +129,13 @@ async fn service(State(state): State<Arc<HourlyWeather>>) -> Json<Service> {
 
     let link = Link::jpeg(state.sky_jpeg());
     let icon = Image::new("icon", vec![link]);
-    let service = Service::new(state.actor(), "Hourly Weather", icon, state.outbox());
+    let service = Service::new(
+        state.actor(),
+        "Hourly Weather",
+        icon,
+        state.outbox(),
+        "hourly",
+    );
 
     Json(service)
 }
