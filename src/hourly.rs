@@ -8,11 +8,13 @@ use axum::{
     http::HeaderValue,
     response::{Html, IntoResponse},
     routing::get,
-    Json, Router,
+    Router,
 };
-use hyper::HeaderMap;
+use hyper::{HeaderMap, StatusCode};
 use std::sync::Arc;
 use tracing::debug;
+
+const ACTIVITY_JSON: &str = "application/activity+json; charset=utf-8";
 
 pub fn app<B>() -> Router<Arc<HourlyWeather>, B>
 where
@@ -61,7 +63,7 @@ async fn history() -> Html<&'static str> {
     )
 }
 
-async fn outbox(State(state): State<Arc<HourlyWeather>>) -> Json<Outbox> {
+async fn outbox(State(state): State<Arc<HourlyWeather>>) -> impl IntoResponse {
     debug!("outbox");
 
     let mut outbox = Outbox::empty(state.outbox());
@@ -87,7 +89,11 @@ async fn outbox(State(state): State<Arc<HourlyWeather>>) -> Json<Outbox> {
     let create = Create::new(state.actor(), image);
     outbox.push(create);
 
-    Json(outbox)
+    (
+        StatusCode::OK,
+        ([("content-type", ACTIVITY_JSON)]),
+        serde_json::to_string(&outbox).unwrap(),
+    )
 }
 
 async fn profile() -> Html<&'static str> {
@@ -124,7 +130,7 @@ async fn root(State(state): State<Arc<HourlyWeather>>, headers: HeaderMap) -> im
     response
 }
 
-async fn service(State(state): State<Arc<HourlyWeather>>) -> Json<Service> {
+async fn service(State(state): State<Arc<HourlyWeather>>) -> impl IntoResponse {
     debug!("service");
 
     let link = Link::jpeg(state.sky_jpeg());
@@ -137,5 +143,9 @@ async fn service(State(state): State<Arc<HourlyWeather>>) -> Json<Service> {
         "hourly",
     );
 
-    Json(service)
+    (
+        StatusCode::OK,
+        ([("content-type", ACTIVITY_JSON)]),
+        serde_json::to_string(&service).unwrap(),
+    )
 }
