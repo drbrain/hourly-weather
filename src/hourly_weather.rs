@@ -13,7 +13,7 @@ impl HourlyWeather {
     }
 
     pub fn actor(&self) -> String {
-        format!("https://{}/hourly", self.domain)
+        format!("https://{}/hourly/about", self.domain)
     }
 
     pub fn domain(&self) -> &str {
@@ -26,5 +26,9 @@ impl HourlyWeather {
 
     pub fn outbox(&self) -> String {
         format!("https://{}/hourly", self.domain)
+    }
+
+    pub fn sky_jpeg(&self) -> String {
+        format!("https://{}/sky.jpeg", self.domain)
     }
 }

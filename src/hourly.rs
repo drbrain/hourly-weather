@@ -1,5 +1,5 @@
 use crate::{
-    activity_pub::{Create, Image, Link, Outbox},
+    activity_pub::{Create, Image, Link, Outbox, Service},
     HourlyWeather,
 };
 use axum::{
@@ -23,16 +23,26 @@ where
         .route("/about", get(about).head(about))
 }
 
-async fn about() -> Html<&'static str> {
-    debug!("about");
+async fn about(State(state): State<Arc<HourlyWeather>>, headers: HeaderMap) -> impl IntoResponse {
+    let mut response = if let Some(accept) = headers.get("accept") {
+        debug!(?accept, "root");
+        if accept
+            .to_str()
+            .unwrap_or("")
+            .contains("application/activity+json")
+        {
+            service(State(state)).await.into_response()
+        } else {
+            profile().await.into_response()
+        }
+    } else {
+        profile().await.into_response()
+    };
 
-    Html(
-        r#"<!DOCTYPE html>
-<title>About hourly weather</title>
+    let headers = response.headers_mut();
+    headers.insert("vary", HeaderValue::from_static("accept"));
 
-<p>Hourly weather photos from Seattle
-"#,
-    )
+    response
 }
 
 async fn history() -> Html<&'static str> {
@@ -80,6 +90,18 @@ async fn outbox(State(state): State<Arc<HourlyWeather>>) -> Json<Outbox> {
     Json(outbox)
 }
 
+async fn profile() -> Html<&'static str> {
+    debug!("profile");
+
+    Html(
+        r#"<!DOCTYPE html>
+<title>Hourly Weather</title>
+
+<p>Hourly weather photos from Seattle
+"#,
+    )
+}
+
 async fn root(State(state): State<Arc<HourlyWeather>>, headers: HeaderMap) -> impl IntoResponse {
     let mut response = if let Some(accept) = headers.get("accept") {
         debug!(?accept, "root");
@@ -100,4 +122,14 @@ async fn root(State(state): State<Arc<HourlyWeather>>, headers: HeaderMap) -> im
     headers.insert("vary", HeaderValue::from_static("accept"));
 
     response
+}
+
+async fn service(State(state): State<Arc<HourlyWeather>>) -> Json<Service> {
+    debug!("service");
+
+    let link = Link::jpeg(state.sky_jpeg());
+    let icon = Image::new("icon", vec![link]);
+    let service = Service::new(state.actor(), "Hourly Weather", icon, state.outbox());
+
+    Json(service)
 }

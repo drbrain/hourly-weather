@@ -84,7 +84,7 @@ pub async fn webfinger(
         let links = vec![
             Link {
                 rel: "self".into(),
-                href: Some(format!("https://{domain}/hourly")),
+                href: Some(format!("https://{domain}/hourly/about")),
                 mime_type: Some("application/activity+json".into()),
                 template: None,
             },
