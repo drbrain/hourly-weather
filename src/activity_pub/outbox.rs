@@ -1,4 +1,4 @@
-use crate::activity_pub::{create::Create, CONTEXT};
+use crate::activity_pub::{create::Create, Context};
 use activitystreams_kinds::collection::OrderedCollectionType;
 use serde::Serialize;
 
@@ -6,7 +6,7 @@ use serde::Serialize;
 #[serde(rename_all = "camelCase")]
 pub struct Outbox {
     #[serde(rename = "@context")]
-    context: String,
+    context: Context,
     r#type: OrderedCollectionType,
     id: String,
     items: Vec<Create>,
@@ -16,7 +16,7 @@ pub struct Outbox {
 impl Outbox {
     pub fn empty(id: impl Into<String>) -> Self {
         Self {
-            context: CONTEXT.into(),
+            context: Context::activitystreams(),
             r#type: OrderedCollectionType::OrderedCollection,
             id: id.into(),
             items: vec![],

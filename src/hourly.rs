@@ -94,7 +94,15 @@ async fn outbox(State(state): State<Arc<HourlyWeather>>) -> impl IntoResponse {
 
     (
         StatusCode::OK,
-        ([("content-type", ACTIVITY_JSON)]),
+        ([
+            (
+                "surrogate-control",
+                "max-age=3600, stale-while-revalidate=60, stale-if-error=60",
+            ),
+            ("content-type", ACTIVITY_JSON),
+            ("surrogate-key", "hourly"),
+            ("x-compress-hint", "on"),
+        ]),
         serde_json::to_string(&outbox).unwrap(),
     )
 }
@@ -138,18 +146,19 @@ async fn service(State(state): State<Arc<HourlyWeather>>) -> impl IntoResponse {
 
     let link = Link::jpeg(state.sky_jpeg());
     let icon = Image::new("icon", vec![link]);
-    let service = Service::new(
-        state.actor(),
-        "Hourly Weather",
-        icon,
-        state.inbox(),
-        state.outbox(),
-        "hourly",
-    );
+    let service = Service::new(state, "Hourly Weather", icon, "hourly");
 
     (
         StatusCode::OK,
-        ([("content-type", ACTIVITY_JSON)]),
+        ([
+            (
+                "surrogate-control",
+                "max-age=3600, stale-while-revalidate=60, stale-if-error=60",
+            ),
+            ("content-type", ACTIVITY_JSON),
+            ("surrogate-key", "hourly"),
+            ("x-compress-hint", "on"),
+        ]),
         serde_json::to_string(&service).unwrap(),
     )
 }
