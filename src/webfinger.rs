@@ -79,30 +79,25 @@ pub async fn webfinger(
     } else if account.user() != "hourly" {
         return Err(StatusCode::NOT_FOUND);
     } else {
-        let domain = state.domain();
-
         let links = vec![
             Link {
                 rel: "self".into(),
-                href: Some(format!("https://{domain}/hourly/about")),
+                href: Some(state.actor()),
                 mime_type: Some("application/activity+json".into()),
                 template: None,
             },
             Link {
                 rel: "http://webfinger.net/rel/profile-page".into(),
-                href: Some(format!("https://{domain}/hourly/about")),
+                href: Some(state.actor()),
                 mime_type: Some("text/html".into()),
                 template: None,
             },
         ];
 
         let webfinger = Webfinger {
-            subject: format!("acct:hourly@{domain}"),
+            subject: state.account(),
             links,
-            aliases: vec![
-                format!("https://{domain}/hourly"),
-                format!("https://{domain}/hourly/about"),
-            ],
+            aliases: vec![state.actor()],
         };
 
         serde_json::to_string(&webfinger).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)

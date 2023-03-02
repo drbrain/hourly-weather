@@ -12,6 +12,10 @@ impl HourlyWeather {
         })
     }
 
+    pub fn account(&self) -> String {
+        format!("acct:hourly@{}", self.domain)
+    }
+
     pub fn actor(&self) -> String {
         format!("https://{}/hourly/about", self.domain)
     }
