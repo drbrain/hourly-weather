@@ -6,7 +6,7 @@ pub fn init() {
         "RUST_LOG",
         std::env::var("RUST_LOG")
             .or_else(|_| std::env::var("OTEL_LOG_LEVEL"))
-            .unwrap_or("hourly_weather=debug".to_string()),
+            .unwrap_or("hourly_weather=debug,info".to_string()),
     );
 
     let otel_resource = DetectResource::default()
