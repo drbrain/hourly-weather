@@ -11,11 +11,11 @@ where
     B: HttpBody + Send + 'static,
 {
     Router::new()
-        .layer(opentelemetry_tracing_layer())
         .route("/.well-known/host-meta", get(host_meta).head(host_meta))
         .route("/.well-known/webfinger", get(webfinger).head(webfinger))
-        .route("/healthcheck", get(healthcheck).head(healthcheck))
         .nest("/hourly", hourly::app())
         .nest_service("/images", ServeDir::new(args.images_dir()))
         .route_service("/sky.jpeg", ServeFile::new(args.sky_jpeg()))
+        .layer(opentelemetry_tracing_layer())
+        .route("/healthcheck", get(healthcheck).head(healthcheck))
 }
