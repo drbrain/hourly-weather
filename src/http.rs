@@ -1,7 +1,6 @@
-use tracing::info;
-
 use crate::{root::root, Args, HourlyWeather};
 use std::{io::Error, net::SocketAddr};
+use tracing::info;
 
 pub async fn start(args: Args) -> Result<(), Error> {
     let state = HourlyWeather::new("weather.segment7.net");
@@ -15,6 +14,6 @@ pub async fn start(args: Args) -> Result<(), Error> {
     info!("binding {addr:?}");
 
     axum_server::bind_rustls(addr, tls_config)
-        .serve(app.into_make_service())
+        .serve(app.into_make_service_with_connect_info::<SocketAddr>())
         .await
 }
