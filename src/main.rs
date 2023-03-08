@@ -5,6 +5,7 @@ mod hourly;
 mod hourly_weather;
 mod http;
 mod root;
+mod sky_jpeg;
 mod tracing;
 mod webfinger;
 
