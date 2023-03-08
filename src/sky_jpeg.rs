@@ -31,7 +31,7 @@ impl<B> MakeSpan<B> for MakeSkyJpegSpan {
     fn make_span(&mut self, _request: &Request<B>) -> Span {
         macro_rules! span {
             ($level:expr) => {
-                tracing::span!($level, "sky_jpeg")
+                tracing::span!($level, "sky.jpeg")
             }
         }
 
